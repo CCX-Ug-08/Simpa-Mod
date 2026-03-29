@@ -3,15 +3,16 @@
 	"id": "simpa",
 	"version": "${version}",
 	"name": "Simpa",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Симпа-па-па полюбила, парней она манила 呵呵 XD",
 	"authors": [
-		"Me!"
+		"CCX_Ug",
+		"DANIM"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/simpa/icon.png",
 	"environment": "*",
 	"entrypoints": {
