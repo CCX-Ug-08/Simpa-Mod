@@ -6,11 +6,14 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
 public class RedirectedSound implements SoundInstance {
     private final SoundInstance original;
     private static final Identifier IDENTIFIER = Identifier.fromNamespaceAndPath(Simpa.MOD_ID, "simpa");
+    private Sound customSound;
+    private final RandomSource random = RandomSource.create();
     public RedirectedSound(SoundInstance original)
     {
         this.original = original;
@@ -23,11 +26,14 @@ public class RedirectedSound implements SoundInstance {
     @Override
     public @Nullable WeighedSoundEvents resolve(SoundManager soundManager)
     {
-        return original.resolve(soundManager);
+        WeighedSoundEvents events = original.resolve(soundManager);
+        if (events != null)
+            this.customSound = events.getSound(random);
+        return events;
     }
     @Override
     public @Nullable Sound getSound() {
-        return null;
+        return customSound;
     }
     @Override
     public SoundSource getSource() {
