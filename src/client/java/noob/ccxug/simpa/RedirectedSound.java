@@ -1,5 +1,6 @@
 package noob.ccxug.simpa;
 
+import net.minecraft.client.resources.sounds.AbstractSoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -7,80 +8,114 @@ import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
+import org.jetbrains.annotations.Nullable;
 
-public class RedirectedSound implements SoundInstance {
-    private final SoundInstance original;
+import java.lang.reflect.Field;
+
+public class RedirectedSound extends AbstractSoundInstance implements RedirectMarker {
     private static final Identifier IDENTIFIER = Identifier.fromNamespaceAndPath(Simpa.MOD_ID, "simpa");
-    private Sound customSound;
-    private final RandomSource random = RandomSource.create();
     public RedirectedSound(SoundInstance original)
     {
-        this.original = original;
+        super(IDENTIFIER, original.getSource(), new RandomSource() {
+            @Override
+            public RandomSource fork() {
+                return null;
+            }
+
+            @Override
+            public PositionalRandomFactory forkPositional() {
+                return null;
+            }
+
+            @Override
+            public void setSeed(long seed) {
+
+            }
+
+            @Override
+            public int nextInt() {
+                return 0;
+            }
+
+            @Override
+            public int nextInt(int bound) {
+                return 0;
+            }
+
+            @Override
+            public long nextLong() {
+                return 0;
+            }
+
+            @Override
+            public boolean nextBoolean() {
+                return false;
+            }
+
+            @Override
+            public float nextFloat() {
+                return 0;
+            }
+
+            @Override
+            public double nextDouble() {
+                return 0;
+            }
+
+            @Override
+            public double nextGaussian() {
+                return 0;
+            }
+        });
+        float origVolume = getVolumeField(original);
+        float origPitch = getPitchField(original);
+        this.volume = origVolume;
+        this.pitch = origPitch;
+        this.x = original.getX();
+        this.y = original.getY();
+        this.z = original.getZ();
+        this.relative = original.isRelative();
+        this.looping = original.isLooping();
+        this.delay = original.getDelay();
+        this.attenuation = original.getAttenuation();
+    }
+    private static float getVolumeField(SoundInstance instance) {
+        if (instance instanceof AbstractSoundInstance) {
+            try {
+                Field field = AbstractSoundInstance.class.getDeclaredField("volume");
+                field.setAccessible(true);
+                return field.getFloat(instance);
+            } catch (Exception e) {
+            }
+        }
+        return 1.0f;
+    }
+
+    private static float getPitchField(SoundInstance instance) {
+        if (instance instanceof AbstractSoundInstance) {
+            try {
+                Field field = AbstractSoundInstance.class.getDeclaredField("pitch");
+                field.setAccessible(true);
+                return field.getFloat(instance);
+            } catch (Exception e) {
+            }
+        }
+        return 1.0f;
     }
     @Override
-    public Identifier getIdentifier()
+    public float getVolume()
     {
-        return IDENTIFIER;
+        return this.volume;
     }
     @Override
-    public @Nullable WeighedSoundEvents resolve(SoundManager soundManager)
+    public float getPitch()
     {
-        WeighedSoundEvents events = original.resolve(soundManager);
-        if (events != null)
-            this.customSound = events.getSound(random);
-        return events;
+        return this.pitch;
     }
     @Override
-    public @Nullable Sound getSound() {
-        return customSound;
-    }
-    @Override
-    public SoundSource getSource() {
-        return original.getSource();
-    }
-    @Override
-    public boolean isLooping() {
-        return original.isLooping();
-    }
-    @Override
-    public boolean isRelative() {
-        return original.isRelative();
-    }
-    @Override
-    public int getDelay() {
-        return original.getDelay();
-    }
-    @Override
-    public float getVolume() {
-        return original.getVolume();
-    }
-    @Override
-    public float getPitch() {
-        return original.getPitch();
-    }
-    @Override
-    public double getX() {
-        return original.getX();
-    }
-    @Override
-    public double getY() {
-        return original.getY();
-    }
-    @Override
-    public double getZ() {
-        return original.getZ();
-    }
-    @Override
-    public Attenuation getAttenuation() {
-        return original.getAttenuation();
-    }
-    @Override
-    public boolean canStartSilent() {
-        return original.canStartSilent();
-    }
-    @Override
-    public boolean canPlaySound() {
-        return original.canPlaySound();
+    public boolean isRedirected()
+    {
+        return true;
     }
 }
